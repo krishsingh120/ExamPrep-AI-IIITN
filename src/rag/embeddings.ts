@@ -1,37 +1,28 @@
-import { Embeddings, EmbeddingsParams } from "@langchain/core/embeddings";
+let pipelinePromise: any | null = null;
 
-export class TransformersEmbeddings extends Embeddings {
-  private pipelinePromise: any | null = null;
-  private modelName = "Xenova/all-MiniLM-L6-v2";
+async function getPipeline() {
+  if (!pipelinePromise) {
+    // Dynamic import to prevent loading the heavy library on application startup
+    const { pipeline } = await import("@xenova/transformers");
+    pipelinePromise = pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+  }
+  return pipelinePromise;
+}
 
-  constructor(fields?: EmbeddingsParams) {
-    super(fields ?? {});
+export async function createEmbeddings(documents: string[]): Promise<number[][]> {
+  const pipe = await getPipeline();
+  const results: number[][] = [];
+
+  for (const doc of documents) {
+    const output = await pipe(doc, { pooling: "mean", normalize: true });
+    results.push(Array.from(output.data));
   }
 
-  private async getPipeline() {
-    if (!this.pipelinePromise) {
-      // Dynamic import to prevent loading the heavy library on application startup
-      const { pipeline } = await import("@xenova/transformers");
-      this.pipelinePromise = pipeline("feature-extraction", this.modelName);
-    }
-    return this.pipelinePromise;
-  }
+  return results;
+}
 
-  async embedDocuments(documents: string[]): Promise<number[][]> {
-    const pipe = await this.getPipeline();
-    const results: number[][] = [];
-
-    for (const doc of documents) {
-      const output = await pipe(doc, { pooling: "mean", normalize: true });
-      results.push(Array.from(output.data));
-    }
-
-    return results;
-  }
-
-  async embedQuery(document: string): Promise<number[]> {
-    const pipe = await this.getPipeline();
-    const output = await pipe(document, { pooling: "mean", normalize: true });
-    return Array.from(output.data);
-  }
+export async function createQueryEmbedding(query: string): Promise<number[]> {
+  const pipe = await getPipeline();
+  const output = await pipe(query, { pooling: "mean", normalize: true });
+  return Array.from(output.data);
 }

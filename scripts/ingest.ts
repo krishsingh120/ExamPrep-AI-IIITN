@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { TransformersEmbeddings } from "../src/rag/embeddings";
+import { createEmbeddings } from "../src/rag/embeddings";
 import { ensureCollection, upsertDocuments, IngestDocument } from "../src/rag/qdrant";
 import { chunkSyllabus, chunkPYQ, chunkSlides, chunkClassNotes } from "../src/rag/chunking";
 
@@ -24,8 +24,7 @@ async function parsePdf(filePath: string): Promise<string> {
 
 async function ingestFile(
   filePath: string,
-  category: "syllabus" | "pyq" | "lecture_slide" | "class_note",
-  embeddingsEngine: TransformersEmbeddings
+  category: "syllabus" | "pyq" | "lecture_slide" | "class_note"
 ) {
   const fileName = path.basename(filePath);
   const ext = path.extname(filePath).toLowerCase();
@@ -84,7 +83,7 @@ async function ingestFile(
 
   // Generate embeddings
   const texts = documents.map((doc) => doc.content);
-  const embeddings = await embeddingsEngine.embedDocuments(texts);
+  const embeddings = await createEmbeddings(texts);
 
   // Upsert into Qdrant
   await upsertDocuments(documents, embeddings);
@@ -95,7 +94,6 @@ async function main() {
   console.log("=== ExamPrep AI Ingestion System ===\n");
 
   const startTime = Date.now();
-  const embeddingsEngine = new TransformersEmbeddings();
 
   try {
     // Ensure Qdrant is up and the collection is created
@@ -123,7 +121,7 @@ async function main() {
           }
 
           const filePath = path.join(folderPath, file);
-          await ingestFile(filePath, category, embeddingsEngine);
+          await ingestFile(filePath, category);
           totalIngested++;
         }
       } catch (err: any) {

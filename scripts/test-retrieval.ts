@@ -1,4 +1,4 @@
-import { TransformersEmbeddings } from "../src/rag/embeddings";
+import { createQueryEmbedding } from "../src/rag/embeddings";
 import { searchVectorStore, RetrievalFilter } from "../src/rag/qdrant";
 
 async function main() {
@@ -18,11 +18,8 @@ async function main() {
   console.log("========================================\n");
 
   try {
-    console.log("[Test] Initializing embedding model...");
-    const embeddingsEngine = new TransformersEmbeddings();
-
     console.log("[Test] Generating embedding for query...");
-    const queryVector = await embeddingsEngine.embedQuery(query);
+    const queryVector = await createQueryEmbedding(query);
 
     console.log("[Test] Searching vector database...");
     const results = await searchVectorStore(queryVector, limit, filters);
