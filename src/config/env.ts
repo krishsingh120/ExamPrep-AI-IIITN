@@ -1,84 +1,45 @@
-import dotenv from "dotenv";
-import path from "path";
-
-// Load .env file from project root
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function required(key: string): string {
-  const value = process.env[key];
-  if (!value || value.trim() === "") {
-    throw new Error(
-      `[Config] Missing required environment variable: ${key}\n` +
-        `  → Copy .env.example to .env and fill in the value.`
-    );
-  }
-  return value.trim();
-}
-
-function optional(key: string, defaultValue: string): string {
-  return (process.env[key] || defaultValue).trim();
-}
-
-function optionalInt(key: string, defaultValue: number): number {
-  const raw = process.env[key];
-  if (!raw) return defaultValue;
-  const parsed = parseInt(raw, 10);
-  return isNaN(parsed) ? defaultValue : parsed;
-}
-
-// ─── Config Object ────────────────────────────────────────────────────────────
+import "dotenv/config";
 
 export const config = {
-  // Server
-  port: optionalInt("PORT", 3001),
-  nodeEnv: optional("NODE_ENV", "development"),
-  isDev: optional("NODE_ENV", "development") === "development",
+  port: Number(process.env.PORT) || 3001,
+  nodeEnv: process.env.NODE_ENV || "development",
+  isDev: process.env.NODE_ENV !== "production",
 
   // LLM
   groq: {
-    apiKey: required("GROQ_API_KEY"),
-    model: optional("GROQ_MODEL", "llama-3.3-70b-versatile"),
+    apiKey: process.env.GROQ_API_KEY!,
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
   },
 
-  // LangSmith tracing (optional — gracefully degraded if missing)
+  // LangSmith tracing
   langsmith: {
-    enabled: optional("LANGCHAIN_TRACING_V2", "false") === "true",
+    enabled: process.env.LANGCHAIN_TRACING_V2 === "true",
     apiKey: process.env.LANGCHAIN_API_KEY || "",
-    project: optional("LANGCHAIN_PROJECT", "examprep-ai"),
+    project: process.env.LANGCHAIN_PROJECT || "examprep-ai",
   },
 
   // Redis
-  redis: {
-    url: optional("REDIS_URL", "redis://localhost:6379"),
-    ttl: {
-      answers: optionalInt("CACHE_TTL_ANSWERS", 3600),       // 1 hour
-      weightage: optionalInt("CACHE_TTL_WEIGHTAGE", 86400),  // 24 hours
-      predictions: optionalInt("CACHE_TTL_PREDICTIONS", 86400),
-    },
+  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
+  redisTtl: {
+    answers: Number(process.env.CACHE_TTL_ANSWERS) || 3600,
+    weightage: Number(process.env.CACHE_TTL_WEIGHTAGE) || 86400,
+    predictions: Number(process.env.CACHE_TTL_PREDICTIONS) || 86400,
   },
 
   // MongoDB
-  mongodb: {
-    uri: optional("MONGODB_URI", "mongodb://localhost:27017/examprep-ai"),
-  },
+  mongoUri: process.env.MONGODB_URI || "mongodb://localhost:27017/examprep-ai",
 
   // Qdrant
   qdrant: {
-    url: optional("QDRANT_URL", "http://localhost:6333"),
-    apiKey: process.env.QDRANT_API_KEY || undefined,
-    collection: optional("QDRANT_COLLECTION", "examprep_docs"),
+    url: process.env.QDRANT_URL || "http://localhost:6333",
+    apiKey: process.env.QDRANT_API_KEY,
+    collection: process.env.QDRANT_COLLECTION || "examprep_docs",
   },
 
-  // Application
-  app: {
-    subjects: optional("SUBJECTS", "DBMS,CN,OS,DSA,TOC,CD")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
-    ragTopK: optionalInt("RAG_TOP_K", 5),
-  },
-} as const;
-
-export type Config = typeof config;
+  // App settings
+  subjects: (process.env.SUBJECTS || "DBMS,CN,OS,DSA,TOC,CD")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+  ragTopK: Number(process.env.RAG_TOP_K) || 5,
+};

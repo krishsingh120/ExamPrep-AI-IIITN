@@ -45,7 +45,7 @@ const SUBJECT_DETAILS: Record<
 // Returns the list of subjects configured for this deployment.
 // The `SUBJECTS` env var controls which subjects are active.
 subjectsRouter.get("/subjects", (_req: Request, res: Response) => {
-  const subjects = config.app.subjects
+  const subjects = config.subjects
     .map((code) => SUBJECT_DETAILS[code] || { name: code, fullName: code, semester: 0 })
     .filter(Boolean);
 
