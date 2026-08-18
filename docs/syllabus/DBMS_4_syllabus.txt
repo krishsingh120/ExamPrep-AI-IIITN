@@ -1,0 +1,16 @@
+Database Management Systems (DBMS) — Course Syllabus
+
+Unit 1: Introduction to DBMS
+Database system concepts and architecture. Data modeling using the Entity-Relationship (ER) model. Relational database model, relational algebra, and tuple calculus.
+
+Unit 2: SQL and Query Processing
+Structured Query Language (SQL) data definition and manipulation. Views, assertions, triggers, and nested queries. Query processing, optimization, and physical database design.
+
+Unit 3: Database Design and Normalization
+Functional dependencies and keys. Normalization process: First Normal Form (1NF), Second Normal Form (2NF), Third Normal Form (3NF), and Boyce-Codd Normal Form (BCNF). Multivalued dependencies and Fourth Normal Form (4NF).
+
+Unit 4: Transaction Management and Concurrency Control
+Transaction concept and ACID properties. Serializability of schedules. Concurrency control techniques: locking protocols (2PL), timestamp ordering, and optimistic concurrency control. Database recovery concepts.
+
+Unit 5: Storage and Indexing
+Disk storage, basic file structures, and hashing. Indexing structures for files: Single-level indexes, multi-level indexes, and B/B+ trees.

@@ -1,0 +1,32 @@
+[
+  {
+    "question": "What is 3NF? Explain functional dependencies and how they determine if a relation is in 3NF with a simple example.",
+    "unit": "Unit 3",
+    "topic": "Normalization",
+    "year": 2024
+  },
+  {
+    "question": "Define BCNF. How does it differ from 3NF? Show a relation that is in 3NF but not BCNF.",
+    "unit": "Unit 3",
+    "topic": "Normalization",
+    "year": 2024
+  },
+  {
+    "question": "Explain strict two-phase locking protocol (2PL). Why does it guarantee conflict serializability?",
+    "unit": "Unit 4",
+    "topic": "Transactions",
+    "year": 2024
+  },
+  {
+    "question": "What is a B+ tree index? How does it differ from a B-tree in terms of search and node structure?",
+    "unit": "Unit 5",
+    "topic": "Indexing",
+    "year": 2024
+  },
+  {
+    "question": "Design an ER diagram for a university management system showing student, courses, and department relationships.",
+    "unit": "Unit 1",
+    "topic": "ER Model",
+    "year": 2024
+  }
+]

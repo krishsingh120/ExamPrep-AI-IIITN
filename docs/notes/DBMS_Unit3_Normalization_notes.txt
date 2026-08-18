@@ -1,0 +1,18 @@
+DBMS Class Notes — Unit 3: Normalization & Keys
+
+Introduction:
+Normalization is a systematic approach of organizing data in a database. It helps in eliminating data redundancy (duplication) and undesirable characteristics like Insertion, Update and Deletion Anomalies. It divides large tables into smaller tables and links them using relationships.
+
+Concept of Functional Dependency (FD):
+A functional dependency is a constraint that specifies the relationship between two sets of attributes in a relation. We write X -> Y to indicate that Y is functionally dependent on X. This means that if two tuples have the same values for X, they must have the same values for Y.
+
+Understanding 3NF in simple language:
+A table is in Third Normal Form (3NF) if there is no transitive dependency. That means we cannot have a non-prime attribute determining another non-prime attribute (X -> Y -> Z). In IIITN exam questions, they often ask to verify if a relation is in 3NF. Remember the rule: for every functional dependency X -> A, either X is a superkey, or A is a prime attribute (part of some candidate key). If this condition holds, your table is in 3NF.
+
+Let's look at an example:
+Consider a relation Student(RollNo, Name, DeptName, DeptHead).
+Here, Candidate Key is RollNo.
+Functional Dependencies:
+1. RollNo -> Name, DeptName (RollNo is key - OK)
+2. DeptName -> DeptHead (DeptName is not key, DeptHead is not prime attribute - NOT OK)
+Since DeptHead is transitively dependent on RollNo via DeptName, this table is NOT in 3NF. To normalize, we split into Student(RollNo, Name, DeptName) and Department(DeptName, DeptHead).

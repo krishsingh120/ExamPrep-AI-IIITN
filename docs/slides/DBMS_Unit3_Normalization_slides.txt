@@ -1,0 +1,35 @@
+=== Page 1 ===
+DBMS Unit 3: Normalization
+Instructor: Faculty of Database Systems
+IIIT Nagpur
+Introduction to Functional Dependencies & Database Anomalies.
+
+=== Page 2 ===
+Why Normalization?
+Redundancy leads to anomalies:
+1. Insertion Anomaly: Cannot insert parent data without child or vice versa.
+2. Update Anomaly: Inconsistent updates if data is repeated.
+3. Deletion Anomaly: Loss of related information on deletion of child rows.
+Goal of normal forms: Eliminate redundancy and anomalies!
+
+=== Page 3 ===
+First Normal Form (1NF)
+A relation is in 1NF if and only if the domain of each attribute contains only atomic (indivisible) values.
+No repeating groups or multi-valued attributes allowed.
+Example: Split multi-valued 'phone_numbers' into separate rows.
+
+=== Page 4 ===
+Second Normal Form (2NF)
+A relation is in 2NF if:
+1. It is in 1NF.
+2. No non-prime attribute is partially dependent on any candidate key.
+Partial dependency: Non-prime attribute dependent on part of a composite key.
+Exam tip: If the candidate key is single-attribute, the table is automatically in 2NF.
+
+=== Page 5 ===
+Third Normal Form (3NF)
+A relation is in 3NF if:
+1. It is in 2NF.
+2. No non-prime attribute is transitively dependent on any candidate key.
+Rule: For any dependency X -> A, either X is a superkey, or A is a prime attribute.
+Simple explanation: Non-key attributes must only depend on the key, the whole key, and nothing but the key.

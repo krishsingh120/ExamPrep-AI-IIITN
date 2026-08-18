@@ -29,6 +29,6 @@
       "@/routes/*": ["./src/routes/*"]
     }
   },
-  "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "web"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "web", "scripts/**/*"]
 }
