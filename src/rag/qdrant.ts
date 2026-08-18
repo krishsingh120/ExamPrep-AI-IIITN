@@ -48,13 +48,13 @@ export interface IngestDocument {
   metadata: {
     subject: string;
     semester: number;
+    category: "syllabus" | "pyq" | "lecture_slide" | "class_note";
+    source: string;
     unit?: string;
     topic?: string;
-    category: "syllabus" | "pyq" | "lecture_slide" | "class_note";
     year?: number;
-    source: string;
-    documentId: string;
-    [key: string]: any;
+    page?: number;
+    documentId?: string;
   };
 }
 
