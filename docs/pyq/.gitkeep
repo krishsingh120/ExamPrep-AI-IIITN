@@ -1,0 +1,20 @@
+Place Previous Year Question papers here.
+
+Accepted formats:
+1. PDF (will be parsed and chunked per question)
+2. JSON (structured format — preferred for metadata accuracy)
+
+JSON format example:
+[
+  {
+    "subject": "DBMS",
+    "year": 2024,
+    "semester": "even",
+    "unit": "Unit 3",
+    "topic": "Normalization",
+    "question": "Explain 3NF with a suitable example.",
+    "marks": 5
+  }
+]
+
+Naming convention: {SUBJECT}_{YEAR}_pyq.pdf or {SUBJECT}_{YEAR}_pyq.json

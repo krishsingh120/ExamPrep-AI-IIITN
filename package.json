@@ -1,0 +1,41 @@
+{
+  "name": "examprep-ai-backend",
+  "version": "1.0.0",
+  "description": "ExamPrep AI — IIITN Multi-Agent Exam Preparation Assistant (Backend)",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "ingest": "tsx scripts/ingest.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["examprep", "rag", "langchain", "groq", "qdrant"],
+  "author": "IIITN ExamPrep AI",
+  "license": "MIT",
+  "dependencies": {
+    "@langchain/core": "^0.3.62",
+    "@langchain/groq": "^0.2.3",
+    "@langchain/qdrant": "^1.0.3",
+    "@langchain/textsplitters": "^1.0.1",
+    "@qdrant/js-client-rest": "^1.14.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "langchain": "^0.3.29",
+    "mongoose": "^8.9.5",
+    "uuid": "^11.0.5",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "@types/uuid": "^10.0.0",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
