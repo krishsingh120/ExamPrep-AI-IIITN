@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { config } from "./config/env";
 import { healthRouter } from "./routes/health.routes";
 import { subjectsRouter } from "./routes/subjects.routes";
+import { chatRouter } from "./routes/chat.routes";
 
 export const app = express();
 
@@ -36,6 +37,7 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 // Routes
 app.use("/api/v1", healthRouter);
 app.use("/api/v1", subjectsRouter);
+app.use("/api/v1", chatRouter);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
