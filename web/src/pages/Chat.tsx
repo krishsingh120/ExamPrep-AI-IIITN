@@ -1,26 +1,81 @@
+import { useState, useRef, useEffect } from 'react'
+
 /**
- * Chat page — Phase 1 skeleton.
- *
- * This is the correct layout and structure for the ExamPrep AI chat interface.
- * The actual chat functionality (API calls, message streaming, source display)
- * will be implemented in Phase 11 (Frontend Integration).
- *
- * Layout:
- * ┌─────────────────────────────────────────────────────┐
- * │ Header: ExamPrep AI          Subject: [DBMS ▼]      │
- * ├──────────────┬──────────────────────────────────────┤
- * │              │                                      │
- * │  + New Chat  │         Chat Messages                │
- * │              │                                      │
- * │  Recent      │  User: message                       │
- * │  Chats       │  AI: response with sources           │
- * │              │                                      │
- * │              ├──────────────────────────────────────┤
- * │              │ Ask your question...          [➤]    │
- * └──────────────┴──────────────────────────────────────┘
+ * Chat page — Phase 11 & 12 Integration
  */
 export default function ChatPage() {
   const subjects = ['DBMS', 'CN', 'OS', 'DSA', 'TOC', 'CD']
+
+  const [subject, setSubject] = useState('DBMS')
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; content: string; sources?: any[] }[]>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [sessionId, setSessionId] = useState('')
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Generate an anonymous session ID on load
+    setSessionId(crypto.randomUUID())
+  }, [])
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  const handleSend = async () => {
+    if (!input.trim()) return
+
+    const userMessage = input
+    setInput('')
+    setMessages((prev) => [...prev, { role: 'user', content: userMessage }])
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('http://localhost:3001/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          subject,
+          message: userMessage,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'ai', content: data.answer },
+        ])
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'ai', content: `Error: ${data.error}` },
+        ])
+      }
+    } catch (error) {
+      console.error(error)
+      setMessages((prev) => [
+        ...prev,
+        { role: 'ai', content: 'Network error. Make sure the backend is running.' },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
 
   return (
     <div
@@ -83,7 +138,8 @@ export default function ChatPage() {
           <label style={{ fontSize: '13px', color: '#64748b' }}>Subject:</label>
           <select
             id="subject-selector"
-            defaultValue="DBMS"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
             style={{
               backgroundColor: '#1e2130',
               border: '1px solid #2a2d3d',
@@ -104,194 +160,311 @@ export default function ChatPage() {
         </div>
       </header>
 
-      {/* ── Body ───────────────────────────────────────────────────────── */}
+      {/* ── Main Content ────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* ── Sidebar ──────────────────────────────────────────────────── */}
+        {/* Sidebar */}
         <aside
           style={{
-            width: '220px',
-            flexShrink: 0,
+            width: '260px',
             backgroundColor: '#1a1d27',
             borderRight: '1px solid #2a2d3d',
             display: 'flex',
             flexDirection: 'column',
-            padding: '16px 12px',
-            gap: '8px',
           }}
         >
-          <button
-            id="new-chat-btn"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
-              backgroundColor: '#6366f1',
-              border: 'none',
-              borderRadius: '8px',
-              color: '#fff',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              width: '100%',
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>+</span> New Chat
-          </button>
+          <div style={{ padding: '16px' }}>
+            <button
+              onClick={() => {
+                setMessages([])
+                setSessionId(crypto.randomUUID())
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 0',
+                backgroundColor: '#6366f1',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'background 0.2s',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4f46e5')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6366f1')}
+            >
+              <span>+</span> New Chat
+            </button>
+          </div>
 
-          <div style={{ marginTop: '8px' }}>
-            <p style={{ fontSize: '11px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', padding: '0 4px' }}>
+          <div style={{ padding: '0 16px', marginTop: '10px' }}>
+            <h3
+              style={{
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                color: '#64748b',
+                letterSpacing: '0.05em',
+                marginBottom: '10px',
+                fontWeight: 600,
+              }}
+            >
               Recent Chats
-            </p>
-            {/* Recent chat items — populated in Phase 9 (Chat History) */}
-            {['DBMS — Normalization', 'CN — OSI Model', 'OS — Deadlocks'].map((chat) => (
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div
-                key={chat}
                 style={{
-                  padding: '8px 10px',
+                  padding: '8px 12px',
+                  backgroundColor: '#1e2130',
                   borderRadius: '6px',
-                  fontSize: '12px',
+                  fontSize: '13px',
                   color: '#94a3b8',
                   cursor: 'pointer',
-                  marginBottom: '2px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  borderLeft: '2px solid #6366f1',
                 }}
               >
-                {chat}
+                Current Session
               </div>
-            ))}
+            </div>
           </div>
         </aside>
 
-        {/* ── Main Chat Area ───────────────────────────────────────────── */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* ── Messages ─────────────────────────────────────────────── */}
+        {/* Chat Area */}
+        <main
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            backgroundColor: '#0f1117',
+          }}
+        >
+          {/* Messages */}
           <div
-            id="messages-container"
             style={{
               flex: 1,
               overflowY: 'auto',
               padding: '24px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
+              gap: '24px',
             }}
           >
-            {/* Welcome state — shown when no messages */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                gap: '16px',
-                color: '#475569',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '48px' }}>🎓</div>
-              <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#94a3b8', margin: 0 }}>
-                ExamPrep AI — IIITN
-              </h1>
-              <p style={{ fontSize: '14px', color: '#475569', maxWidth: '400px', lineHeight: 1.6, margin: 0 }}>
-                Ask me anything about your syllabus, get PYQ analysis, topic predictions, or concept explanations.
-              </p>
+            {messages.length === 0 ? (
               <div
                 style={{
                   display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'center',
-                  maxWidth: '500px',
-                  marginTop: '8px',
+                  height: '100%',
+                  color: '#64748b',
+                  gap: '16px',
                 }}
               >
-                {[
-                  'Explain normalization',
-                  'DBMS ke important topics?',
-                  'Is baar kya aa sakta hai?',
-                  'PYQ frequency batao',
-                ].map((suggestion) => (
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '16px',
+                    background: '#1a1d27',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                  }}
+                >
+                  👋
+                </div>
+                <h2>How can I help you prepare?</h2>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button
-                    key={suggestion}
+                    onClick={() => setInput('Explain normalization')}
                     style={{
-                      padding: '6px 14px',
+                      padding: '8px 16px',
                       backgroundColor: '#1e2130',
                       border: '1px solid #2a2d3d',
                       borderRadius: '20px',
-                      color: '#94a3b8',
-                      fontSize: '12px',
+                      color: '#e2e8f0',
+                      fontSize: '13px',
                       cursor: 'pointer',
                     }}
                   >
-                    {suggestion}
+                    "Explain normalization"
                   </button>
-                ))}
+                  <button
+                    onClick={() => setInput(`${subject} mein is baar kya aa sakta hai?`)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#1e2130',
+                      border: '1px solid #2a2d3d',
+                      borderRadius: '20px',
+                      color: '#e2e8f0',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    "{subject} predictions"
+                  </button>
+                </div>
               </div>
-              <p style={{ fontSize: '11px', color: '#334155', marginTop: '16px' }}>
-                ⚡ Phase 1 — UI skeleton. Chat functionality coming in Phase 11.
-              </p>
-            </div>
+            ) : (
+              messages.map((msg, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    gap: '16px',
+                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                    maxWidth: '80%',
+                  }}
+                >
+                  {msg.role === 'ai' && (
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      🎓
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      backgroundColor: msg.role === 'user' ? '#6366f1' : '#1a1d27',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      borderTopRightRadius: msg.role === 'user' ? '4px' : '12px',
+                      borderTopLeftRadius: msg.role === 'ai' ? '4px' : '12px',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      color: msg.role === 'user' ? '#ffffff' : '#e2e8f0',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))
+            )}
+            
+            {isLoading && (
+              <div style={{ display: 'flex', gap: '16px', alignSelf: 'flex-start', maxWidth: '80%' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '6px',
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                  }}
+                >
+                  🎓
+                </div>
+                <div
+                  style={{
+                    backgroundColor: '#1a1d27',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    borderTopLeftRadius: '4px',
+                    fontSize: '14px',
+                    color: '#94a3b8',
+                  }}
+                >
+                  <span style={{ animation: 'pulse 1.5s infinite' }}>Thinking...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* ── Input Bar ────────────────────────────────────────────── */}
+          {/* Input Area */}
           <div
             style={{
-              padding: '16px 24px',
-              borderTop: '1px solid #2a2d3d',
-              backgroundColor: '#1a1d27',
-              flexShrink: 0,
+              padding: '24px',
+              backgroundColor: '#0f1117',
+              borderTop: '1px solid #1e2130',
             }}
           >
             <div
               style={{
                 display: 'flex',
-                gap: '12px',
-                alignItems: 'flex-end',
-                backgroundColor: '#1e2130',
+                backgroundColor: '#1a1d27',
                 border: '1px solid #2a2d3d',
                 borderRadius: '12px',
-                padding: '12px 16px',
+                padding: '8px',
+                alignItems: 'flex-end',
               }}
             >
               <textarea
-                id="chat-input"
-                placeholder="Ask your question... (e.g. Normalization explain karo)"
-                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask your question..."
+                disabled={isLoading}
                 style={{
                   flex: 1,
-                  background: 'none',
+                  backgroundColor: 'transparent',
                   border: 'none',
                   color: '#e2e8f0',
                   fontSize: '14px',
+                  padding: '10px',
                   resize: 'none',
                   outline: 'none',
                   fontFamily: 'inherit',
-                  lineHeight: '1.5',
+                  maxHeight: '150px',
+                  minHeight: '24px',
                 }}
+                rows={1}
               />
               <button
-                id="send-btn"
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
                 style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: '#6366f1',
+                  backgroundColor: input.trim() && !isLoading ? '#6366f1' : '#2a2d3d',
+                  color: 'white',
                   border: 'none',
-                  color: '#fff',
-                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  width: '40px',
+                  height: '40px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '16px',
+                  cursor: input.trim() && !isLoading ? 'pointer' : 'not-allowed',
+                  transition: 'background 0.2s',
                   flexShrink: 0,
+                  marginBottom: '2px',
+                  marginRight: '2px',
                 }}
               >
                 ➤
               </button>
+            </div>
+            <div
+              style={{
+                textAlign: 'center',
+                fontSize: '11px',
+                color: '#64748b',
+                marginTop: '12px',
+              }}
+            >
+              AI can make mistakes. Always verify with official course material.
             </div>
           </div>
         </main>
