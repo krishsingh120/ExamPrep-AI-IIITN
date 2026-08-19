@@ -3,7 +3,7 @@ import { config } from "../config/env";
 import { searchVectorStore } from "../rag/qdrant";
 import { createQueryEmbedding } from "../rag/embeddings";
 
-export async function retrieveAgent(query: string, subject?: string) {
+export async function retrieveAgent(query: string, subject?: string, history: { role: string; content: string }[] = []) {
   // 1. Generate query embedding
   const queryVector = await createQueryEmbedding(query);
 
@@ -33,10 +33,14 @@ Cite your sources using the [Source X] labels.
 Context:
 ${context}`;
 
-  const response = await model.invoke([
+  const messages = [
     ["system", systemPrompt],
+    ...history.map((msg) => [msg.role, msg.content]),
     ["human", query],
-  ]);
+  ];
+
+  // @ts-ignore
+  const response = await model.invoke(messages);
 
   return response.content as string;
 }

@@ -3,7 +3,7 @@ import { config } from "../config/env";
 import { searchVectorStore } from "../rag/qdrant";
 import { createQueryEmbedding } from "../rag/embeddings";
 
-export async function doubtSolverAgent(question: string, subject?: string) {
+export async function doubtSolverAgent(question: string, subject?: string, history: { role: string; content: string }[] = []) {
   // 1. Generate query embedding
   const queryVector = await createQueryEmbedding(question);
 
@@ -30,10 +30,14 @@ If the context doesn't fully answer the question, you may supplement with your o
 Context:
 ${context}`;
 
-  const response = await model.invoke([
+  const messages = [
     ["system", systemPrompt],
+    ...history.map((msg) => [msg.role, msg.content]),
     ["human", question],
-  ]);
+  ];
+
+  // @ts-ignore
+  const response = await model.invoke(messages);
 
   return response.content as string;
 }

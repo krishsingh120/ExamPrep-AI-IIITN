@@ -5,17 +5,17 @@ import { getHistory } from "../db/chatHistory";
 export const chatRouter = Router();
 
 chatRouter.post("/chat", async (req: Request, res: Response): Promise<any> => {
-  const { sessionId, question } = req.body;
+  const { sessionId, subject, message } = req.body;
 
-  if (!sessionId || !question) {
+  if (!sessionId || !message) {
     return res.status(400).json({
       success: false,
-      error: "sessionId and question are required",
+      error: "sessionId and message are required",
     });
   }
 
   try {
-    const answer = await processChat(sessionId, question);
+    const answer = await processChat(sessionId, message, subject);
     res.status(200).json({
       success: true,
       answer,
